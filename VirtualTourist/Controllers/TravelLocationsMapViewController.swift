@@ -7,29 +7,29 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class TravelLocationsMapViewController: UIViewController {
 
     @IBOutlet weak var mapView: MKMapView!
     
+    var pins: [Pin] = []
+    var dataController: DataController!
+    
+    // Persist pin instance
+    var fetchedResultsController: NSFetchedResultsController<Pin>!
+    
+    // Persist map center and zoom level
     let userDefaults = UserDefaults.standard
-    var latitude: CLLocationDegrees = 0
-    var longitude: CLLocationDegrees = 0
-    var latitudeDelta: CLLocationDegrees = 0
-    var longitudeDelta: CLLocationDegrees = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressed(_:)))
         mapView.addGestureRecognizer(longPressRecognizer)
         mapView.delegate = self
-        latitude = userDefaults.double(forKey: Constants.latitudeKey)
-        longitude = userDefaults.double(forKey: Constants.longitudeKey)
-        latitudeDelta = userDefaults.double(forKey: Constants.latitudeDeltaKey)
-        longitudeDelta = userDefaults.double(forKey: Constants.longitudeDeltaKey)
-        let center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-        let span = MKCoordinateSpan(latitudeDelta: latitudeDelta, longitudeDelta: longitudeDelta)
-        mapView.region = MKCoordinateRegion(center: center, span: span)
+        restoreCenterAndZoomLevel()
+        setupFetchedResultsController()
+        initPins()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -48,21 +48,51 @@ class TravelLocationsMapViewController: UIViewController {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
         deselectAnnotations()
+        setupFetchedResultsController()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        fetchedResultsController = nil
     }
     
     @objc func longPressed(_ gestureRecognizer: UILongPressGestureRecognizer) {
         if gestureRecognizer.state == .began {
-            addAnnotation(gestureRecognizer: gestureRecognizer)
+            addPin(gestureRecognizer: gestureRecognizer)
         }
     }
     
-    private func addAnnotation(gestureRecognizer: UIGestureRecognizer) {
-        let touchPoint = gestureRecognizer.location(in: mapView)
-        let newCoordinates = mapView.convert(touchPoint, toCoordinateFrom: mapView)
+    private func initPins() {
+        fetchedResultsController.fetchedObjects?.forEach{ pin in
+            addPinOnMap(latitude: pin.latitude, longitude: pin.longitude)
+            pins.append(pin)
+        }
+    }
+    
+    private func addPinOnMap(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
         let annotation = MKPointAnnotation()
-        annotation.coordinate = newCoordinates
+        let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        annotation.coordinate = coordinate
         mapView.addAnnotation(annotation)
-        mapView.setCenter(newCoordinates, animated: true)
+    }
+    
+    private func persistCenterAndZoomLevel() {
+        let latitude = mapView.centerCoordinate.latitude
+        let longitude = mapView.centerCoordinate.longitude
+        let latitudeDelta = mapView.region.span.latitudeDelta
+        let longitudeDelta = mapView.region.span.longitudeDelta
+        userDefaults.set(latitude, forKey: Constants.latitudeKey)
+        userDefaults.set(longitude, forKey: Constants.longitudeKey)
+        userDefaults.set(latitudeDelta, forKey: Constants.latitudeDeltaKey)
+        userDefaults.set(longitudeDelta, forKey: Constants.longitudeDeltaKey)
+    }
+    
+    private func addPin(gestureRecognizer: UIGestureRecognizer) {
+        let touchPoint = gestureRecognizer.location(in: mapView)
+        let coordinate = mapView.convert(touchPoint, toCoordinateFrom: mapView)
+        addPinOnMap(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        persistPin(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        mapView.setCenter(coordinate, animated: true)
     }
     
     private func deselectAnnotations() {
@@ -70,11 +100,24 @@ class TravelLocationsMapViewController: UIViewController {
             mapView.deselectAnnotation(annotation, animated: false)
         }
     }
+    
+    private func setupFetchedResultsController() {
+        let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: false)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "pins")
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+    }
 }
 
+// MARK: MapViewDelegate
+
 extension TravelLocationsMapViewController: MKMapViewDelegate {
-    
-    // MARK: MapViewDelegate
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseId = Constants.annotationViewReuseId
@@ -93,21 +136,41 @@ extension TravelLocationsMapViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
         let annotation = view.annotation
-        let center = mapView.centerCoordinate
-        let span = mapView.region.span
-        let pin = Pin(annotation: annotation!, center: center, span: span)
-        performSegue(withIdentifier: Constants.segueIdentifier, sender: pin)
+        pins.forEach { pin in
+            if pin.latitude == annotation?.coordinate.latitude {
+                performSegue(withIdentifier: Constants.segueIdentifier, sender: pin)
+            }
+        }
     }
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-        latitude = mapView.centerCoordinate.latitude
-        longitude = mapView.centerCoordinate.longitude
-        latitudeDelta = mapView.region.span.latitudeDelta
-        longitudeDelta = mapView.region.span.longitudeDelta
-        userDefaults.set(latitude, forKey: Constants.latitudeKey)
-        userDefaults.set(longitude, forKey: Constants.longitudeKey)
-        userDefaults.set(latitudeDelta, forKey: Constants.latitudeDeltaKey)
-        userDefaults.set(longitudeDelta, forKey: Constants.longitudeDeltaKey)
+        persistCenterAndZoomLevel()
+    }
+}
+
+// MARK: Persist map center and zoom level
+
+extension TravelLocationsMapViewController {
+    
+    private func persistPin(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
+        let span = mapView.region.span
+        let pin = Pin(context: dataController.viewContext)
+        pin.latitude = latitude
+        pin.longitude = longitude
+        pin.longitudeDelta = span.latitudeDelta
+        pin.longitudeDelta = span.longitudeDelta
+        pins.append(pin)
+        try? dataController.viewContext.save()
+    }
+    
+    private func restoreCenterAndZoomLevel() {
+        let latitude = userDefaults.double(forKey: Constants.latitudeKey)
+        let longitude = userDefaults.double(forKey: Constants.longitudeKey)
+        let latitudeDelta = userDefaults.double(forKey: Constants.latitudeDeltaKey)
+        let longitudeDelta = userDefaults.double(forKey: Constants.longitudeDeltaKey)
+        let center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        let span = MKCoordinateSpan(latitudeDelta: latitudeDelta, longitudeDelta: longitudeDelta)
+        mapView.region = MKCoordinateRegion(center: center, span: span)
     }
 }
 

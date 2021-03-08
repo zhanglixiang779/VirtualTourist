@@ -30,8 +30,12 @@ class PhotoAlbumViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        mapView.addAnnotation(pin.annotation)
-        mapView.region = MKCoordinateRegion(center: pin.center, span: pin.span)
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
+        mapView.addAnnotation(annotation)
+        let span = MKCoordinateSpan(latitudeDelta: pin.latitude, longitudeDelta: pin.longitude)
+        mapView.region = MKCoordinateRegion(center: annotation.coordinate, span: span)
+        
         collectionView.dataSource = self
         collectionView.delegate = self
         errorLabel.isHidden = true
@@ -53,7 +57,7 @@ class PhotoAlbumViewController: UIViewController {
     private func fetchPhotos() {
         indicator.startAnimating()
         newCollectionButton.isEnabled = false
-        client.getPhotos(latitude: pin.center.latitude, longitude: pin.center.longitude) { (response, error) in
+        client.getPhotos(latitude: pin.latitude, longitude: pin.longitude) { (response, error) in
             guard let response = response else {
                 self.indicator.stopAnimating()
                 return
