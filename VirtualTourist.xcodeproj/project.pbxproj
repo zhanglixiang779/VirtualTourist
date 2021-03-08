@@ -9,21 +9,37 @@
 /* Begin PBXBuildFile section */
 		3174D6C325E1E8BE0071A6E0 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6C225E1E8BE0071A6E0 /* AppDelegate.swift */; };
 		3174D6C525E1E8BE0071A6E0 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6C425E1E8BE0071A6E0 /* SceneDelegate.swift */; };
-		3174D6C725E1E8BE0071A6E0 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6C625E1E8BE0071A6E0 /* ViewController.swift */; };
+		3174D6C725E1E8BE0071A6E0 /* TravelLocationsMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6C625E1E8BE0071A6E0 /* TravelLocationsMapViewController.swift */; };
 		3174D6CA25E1E8BE0071A6E0 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3174D6C825E1E8BE0071A6E0 /* Main.storyboard */; };
 		3174D6CC25E1E8BF0071A6E0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3174D6CB25E1E8BF0071A6E0 /* Assets.xcassets */; };
 		3174D6CF25E1E8BF0071A6E0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 3174D6CD25E1E8BF0071A6E0 /* LaunchScreen.storyboard */; };
+		3174D6DE25E316E70071A6E0 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6DD25E316E70071A6E0 /* Constants.swift */; };
+		3174D6E325E322810071A6E0 /* PhotoAlbumViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6E225E322810071A6E0 /* PhotoAlbumViewController.swift */; };
+		3174D6E725E331120071A6E0 /* Pin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6E625E331120071A6E0 /* Pin.swift */; };
+		3174D6EB25E368970071A6E0 /* NetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6EA25E368970071A6E0 /* NetworkClient.swift */; };
+		3174D6EE25E36F260071A6E0 /* Response.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6ED25E36F260071A6E0 /* Response.swift */; };
+		3174D6F225E3701F0071A6E0 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6F125E3701F0071A6E0 /* Photo.swift */; };
+		3174D6F525E370E70071A6E0 /* Photos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6F425E370E70071A6E0 /* Photos.swift */; };
+		3174D6FA25E384C40071A6E0 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3174D6F925E384C40071A6E0 /* PhotoCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		3174D6BF25E1E8BE0071A6E0 /* VirtualTourist.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VirtualTourist.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3174D6C225E1E8BE0071A6E0 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3174D6C425E1E8BE0071A6E0 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		3174D6C625E1E8BE0071A6E0 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		3174D6C625E1E8BE0071A6E0 /* TravelLocationsMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelLocationsMapViewController.swift; sourceTree = "<group>"; };
 		3174D6C925E1E8BE0071A6E0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		3174D6CB25E1E8BF0071A6E0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3174D6CE25E1E8BF0071A6E0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3174D6D025E1E8BF0071A6E0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3174D6DD25E316E70071A6E0 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		3174D6E225E322810071A6E0 /* PhotoAlbumViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumViewController.swift; sourceTree = "<group>"; };
+		3174D6E625E331120071A6E0 /* Pin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pin.swift; sourceTree = "<group>"; };
+		3174D6EA25E368970071A6E0 /* NetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkClient.swift; sourceTree = "<group>"; };
+		3174D6ED25E36F260071A6E0 /* Response.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Response.swift; sourceTree = "<group>"; };
+		3174D6F125E3701F0071A6E0 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
+		3174D6F425E370E70071A6E0 /* Photos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photos.swift; sourceTree = "<group>"; };
+		3174D6F925E384C40071A6E0 /* PhotoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,15 +72,55 @@
 		3174D6C125E1E8BE0071A6E0 /* VirtualTourist */ = {
 			isa = PBXGroup;
 			children = (
+				3174D6F825E384760071A6E0 /* Views */,
+				3174D6E525E330FF0071A6E0 /* Models */,
+				3174D6E125E3223C0071A6E0 /* Controllers */,
+				3174D6DC25E316CF0071A6E0 /* Constants */,
 				3174D6C225E1E8BE0071A6E0 /* AppDelegate.swift */,
 				3174D6C425E1E8BE0071A6E0 /* SceneDelegate.swift */,
-				3174D6C625E1E8BE0071A6E0 /* ViewController.swift */,
 				3174D6C825E1E8BE0071A6E0 /* Main.storyboard */,
 				3174D6CB25E1E8BF0071A6E0 /* Assets.xcassets */,
 				3174D6CD25E1E8BF0071A6E0 /* LaunchScreen.storyboard */,
 				3174D6D025E1E8BF0071A6E0 /* Info.plist */,
 			);
 			path = VirtualTourist;
+			sourceTree = "<group>";
+		};
+		3174D6DC25E316CF0071A6E0 /* Constants */ = {
+			isa = PBXGroup;
+			children = (
+				3174D6DD25E316E70071A6E0 /* Constants.swift */,
+			);
+			path = Constants;
+			sourceTree = "<group>";
+		};
+		3174D6E125E3223C0071A6E0 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				3174D6C625E1E8BE0071A6E0 /* TravelLocationsMapViewController.swift */,
+				3174D6E225E322810071A6E0 /* PhotoAlbumViewController.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		3174D6E525E330FF0071A6E0 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				3174D6E625E331120071A6E0 /* Pin.swift */,
+				3174D6EA25E368970071A6E0 /* NetworkClient.swift */,
+				3174D6ED25E36F260071A6E0 /* Response.swift */,
+				3174D6F125E3701F0071A6E0 /* Photo.swift */,
+				3174D6F425E370E70071A6E0 /* Photos.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		3174D6F825E384760071A6E0 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3174D6F925E384C40071A6E0 /* PhotoCell.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,9 +193,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3174D6C725E1E8BE0071A6E0 /* ViewController.swift in Sources */,
+				3174D6C725E1E8BE0071A6E0 /* TravelLocationsMapViewController.swift in Sources */,
 				3174D6C325E1E8BE0071A6E0 /* AppDelegate.swift in Sources */,
 				3174D6C525E1E8BE0071A6E0 /* SceneDelegate.swift in Sources */,
+				3174D6F225E3701F0071A6E0 /* Photo.swift in Sources */,
+				3174D6EE25E36F260071A6E0 /* Response.swift in Sources */,
+				3174D6E725E331120071A6E0 /* Pin.swift in Sources */,
+				3174D6EB25E368970071A6E0 /* NetworkClient.swift in Sources */,
+				3174D6E325E322810071A6E0 /* PhotoAlbumViewController.swift in Sources */,
+				3174D6F525E370E70071A6E0 /* Photos.swift in Sources */,
+				3174D6FA25E384C40071A6E0 /* PhotoCell.swift in Sources */,
+				3174D6DE25E316E70071A6E0 /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
