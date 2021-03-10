@@ -7,6 +7,7 @@
 
 import UIKit
 import MapKit
+import CoreData
 
 class PhotoAlbumViewController: UIViewController {
     
@@ -22,11 +23,27 @@ class PhotoAlbumViewController: UIViewController {
     
     @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     
-    let margin: CGFloat = 10
-    let cellsPerRow = 3
     var photos: [Photo] = []
     var client = NetworkClient()
     var pin: Pin!
+    var dataController: DataController!
+    var fetchedResultsController: NSFetchedResultsController<Image>!
+    
+    var isImagesPersisted: Bool {
+        return fetchedResultsController.fetchedObjects?.count ?? 0 > 0
+    }
+    
+    var count: Int {
+        if isImagesPersisted {
+            return fetchedResultsController.fetchedObjects!.count
+        } else {
+            return photos.count
+        }
+    }
+    
+    deinit {
+        fetchedResultsController = nil
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,11 +52,13 @@ class PhotoAlbumViewController: UIViewController {
         mapView.addAnnotation(annotation)
         let span = MKCoordinateSpan(latitudeDelta: pin.latitude, longitudeDelta: pin.longitude)
         mapView.region = MKCoordinateRegion(center: annotation.coordinate, span: span)
-        
         collectionView.dataSource = self
         collectionView.delegate = self
         errorLabel.isHidden = true
-        fetchPhotos()
+        setupFetchedResultsController()
+        if !isImagesPersisted {
+            fetchPhotos()
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -47,9 +66,15 @@ class PhotoAlbumViewController: UIViewController {
         navigationController?.setNavigationBarHidden(false, animated: true)
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        try? self.dataController.backgroundContext.save()
+    }
+    
     @IBAction func refetch(_ sender: Any) {
         fetchPhotos()
     }
+    
     private func getUrlString(serverId: String, photoId: String, secret: String) -> String {
         return "https://live.staticflickr.com/\(serverId)/\(photoId)_\(secret)_q.jpg"
     }
@@ -73,6 +98,27 @@ class PhotoAlbumViewController: UIViewController {
             }
         }
     }
+    
+    private func setupFetchedResultsController() {
+        let fetchRequest: NSFetchRequest<Image> = Image.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "position", ascending: true)
+        let predicate = NSPredicate(format: "pin == %@", pin)
+        fetchRequest.sortDescriptors = [sortDescriptor]
+        fetchRequest.predicate = predicate
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "photos")
+        do {
+            try fetchedResultsController.performFetch()
+        } catch {
+            fatalError("The fetch could not be performed: \(error.localizedDescription)")
+        }
+    }
+    
+    private func createManagedImage(data: Data, position: Int) {
+        let image = Image(context: self.dataController.backgroundContext)
+        image.data = data
+        image.pin = self.pin
+        image.position = Int64(position)
+    }
 
 }
 
@@ -83,24 +129,35 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        photos.count
+        return count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.collectionViewCellId, for: indexPath) as! PhotoCell
-        let photo = photos[indexPath.row]
-        let urlString = getUrlString(serverId: photo.server, photoId: photo.id, secret: photo.secret)
-        cell.imageView.image = UIImage(named: "VirtualTourist")
-        if let url = URL(string: urlString) {
-            client.downloadImage(url: url) { (data, error) in
-                guard let data = data else {
-                    return
-                }
+        
+        if isImagesPersisted {
+            if let data = fetchedResultsController.object(at: indexPath).data {
                 cell.imageView.image = UIImage(data: data)
                 cell.setNeedsLayout()
             }
+        } else {
+            let photo = photos[indexPath.row]
+            let urlString = getUrlString(serverId: photo.server, photoId: photo.id, secret: photo.secret)
+            cell.imageView.image = UIImage(named: "VirtualTourist")
+            if let url = URL(string: urlString) {
+                client.downloadImage(url: url) { (data, error) in
+                    guard let data = data else {
+                        return
+                    }
+                
+                    cell.imageView.image = UIImage(data: data)
+                    cell.setNeedsLayout()
+                    
+                    self.createManagedImage(data: data, position: indexPath.row)
+                }
+            }
         }
-        
+    
         return cell
     }
     

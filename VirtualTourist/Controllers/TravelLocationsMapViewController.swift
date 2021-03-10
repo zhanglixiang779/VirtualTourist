@@ -36,6 +36,7 @@ class TravelLocationsMapViewController: UIViewController {
         if let destination = segue.destination as? PhotoAlbumViewController {
             if let pin = sender as? Pin {
                 destination.pin = pin
+                destination.dataController = dataController
             }
         }
         
@@ -102,7 +103,7 @@ class TravelLocationsMapViewController: UIViewController {
     }
     
     private func setupFetchedResultsController() {
-        let fetchRequest:NSFetchRequest<Pin> = Pin.fetchRequest()
+        let fetchRequest: NSFetchRequest<Pin> = Pin.fetchRequest()
         let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
@@ -154,13 +155,13 @@ extension TravelLocationsMapViewController {
     
     private func persistPin(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
         let span = mapView.region.span
-        let pin = Pin(context: dataController.viewContext)
+        let pin = Pin(context: dataController.backgroundContext)
         pin.latitude = latitude
         pin.longitude = longitude
         pin.longitudeDelta = span.latitudeDelta
         pin.longitudeDelta = span.longitudeDelta
         pins.append(pin)
-        try? dataController.viewContext.save()
+        try? dataController.backgroundContext.save()
     }
     
     private func restoreCenterAndZoomLevel() {
