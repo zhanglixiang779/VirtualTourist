@@ -13,7 +13,7 @@
         <relationship name="images" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Image" inverseName="pin" inverseEntity="Image"/>
     </entity>
     <elements>
-        <element name="Image" positionX="-8702.23828125" positionY="3390.91796875" width="128" height="88"/>
+        <element name="Image" positionX="-8919.9609375" positionY="3360.3984375" width="128" height="88"/>
         <element name="Pin" positionX="-9151.3671875" positionY="3355.66796875" width="128" height="118"/>
     </elements>
 </model>

@@ -15,4 +15,5 @@ struct Constants {
     static let segueIdentifier = "mapViewToAlbumView"
     static let collectionViewCellId = "collectionViewCell"
     static let annotationViewReuseId = "pin"
+    static let isFirstTimeOpenApp = "isFirstTimeOpenApp"
 }

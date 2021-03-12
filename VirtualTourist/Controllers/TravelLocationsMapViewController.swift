@@ -14,6 +14,7 @@ class TravelLocationsMapViewController: UIViewController {
     @IBOutlet weak var mapView: MKMapView!
     
     var pins: [Pin] = []
+    
     var dataController: DataController!
     
     // Persist pin instance
@@ -22,14 +23,30 @@ class TravelLocationsMapViewController: UIViewController {
     // Persist map center and zoom level
     let userDefaults = UserDefaults.standard
     
+    var isFirstTimeOpenApp: Bool {
+        !userDefaults.bool(forKey: Constants.isFirstTimeOpenApp)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressed(_:)))
         mapView.addGestureRecognizer(longPressRecognizer)
         mapView.delegate = self
-        restoreCenterAndZoomLevel()
+        retrieveLastCenterAndZoomLevel()
         setupFetchedResultsController()
         initPins()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: false)
+        deselectAnnotations()
+        setupFetchedResultsController()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        fetchedResultsController = nil
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -45,21 +62,19 @@ class TravelLocationsMapViewController: UIViewController {
         navigationItem.backBarButtonItem = backItem
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: false)
-        deselectAnnotations()
-        setupFetchedResultsController()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        fetchedResultsController = nil
-    }
-    
     @objc func longPressed(_ gestureRecognizer: UILongPressGestureRecognizer) {
         if gestureRecognizer.state == .began {
             addPin(gestureRecognizer: gestureRecognizer)
+        }
+    }
+    
+    // MARK: private functions
+    
+    private func retrieveLastCenterAndZoomLevel() {
+        if !isFirstTimeOpenApp {
+            restoreCenterAndZoomLevel()
+        } else {
+            userDefaults.set(true, forKey: Constants.isFirstTimeOpenApp)
         }
     }
     
@@ -75,17 +90,6 @@ class TravelLocationsMapViewController: UIViewController {
         let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
         annotation.coordinate = coordinate
         mapView.addAnnotation(annotation)
-    }
-    
-    private func persistCenterAndZoomLevel() {
-        let latitude = mapView.centerCoordinate.latitude
-        let longitude = mapView.centerCoordinate.longitude
-        let latitudeDelta = mapView.region.span.latitudeDelta
-        let longitudeDelta = mapView.region.span.longitudeDelta
-        userDefaults.set(latitude, forKey: Constants.latitudeKey)
-        userDefaults.set(longitude, forKey: Constants.longitudeKey)
-        userDefaults.set(latitudeDelta, forKey: Constants.latitudeDeltaKey)
-        userDefaults.set(longitudeDelta, forKey: Constants.longitudeDeltaKey)
     }
     
     private func addPin(gestureRecognizer: UIGestureRecognizer) {
@@ -107,7 +111,7 @@ class TravelLocationsMapViewController: UIViewController {
         let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: false)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "pins")
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.backgroundContext, sectionNameKeyPath: nil, cacheName: "pins")
         do {
             try fetchedResultsController.performFetch()
         } catch {
@@ -149,7 +153,7 @@ extension TravelLocationsMapViewController: MKMapViewDelegate {
     }
 }
 
-// MARK: Persist map center and zoom level
+// MARK: Local persistence
 
 extension TravelLocationsMapViewController {
     
@@ -162,6 +166,17 @@ extension TravelLocationsMapViewController {
         pin.longitudeDelta = span.longitudeDelta
         pins.append(pin)
         try? dataController.backgroundContext.save()
+    }
+    
+    private func persistCenterAndZoomLevel() {
+        let latitude = mapView.centerCoordinate.latitude
+        let longitude = mapView.centerCoordinate.longitude
+        let latitudeDelta = mapView.region.span.latitudeDelta
+        let longitudeDelta = mapView.region.span.longitudeDelta
+        userDefaults.set(latitude, forKey: Constants.latitudeKey)
+        userDefaults.set(longitude, forKey: Constants.longitudeKey)
+        userDefaults.set(latitudeDelta, forKey: Constants.latitudeDeltaKey)
+        userDefaults.set(longitudeDelta, forKey: Constants.longitudeDeltaKey)
     }
     
     private func restoreCenterAndZoomLevel() {

@@ -55,7 +55,7 @@ class PhotoAlbumViewController: UIViewController {
         let annotation = MKPointAnnotation()
         annotation.coordinate = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
         mapView.addAnnotation(annotation)
-        let span = MKCoordinateSpan(latitudeDelta: pin.latitude, longitudeDelta: pin.longitude)
+        let span = MKCoordinateSpan(latitudeDelta: pin.latitudeDelta, longitudeDelta: pin.longitudeDelta)
         mapView.region = MKCoordinateRegion(center: annotation.coordinate, span: span)
         collectionView.dataSource = self
         collectionView.delegate = self
