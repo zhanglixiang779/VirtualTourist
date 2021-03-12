@@ -12,11 +12,11 @@ class DataController {
     
     let persistentContainer:NSPersistentContainer
     
-    var viewContext:NSManagedObjectContext {
+    var viewContext: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
     
-    let backgroundContext:NSManagedObjectContext!
+    let backgroundContext: NSManagedObjectContext!
     
     init(modelName:String) {
         persistentContainer = NSPersistentContainer(name: modelName)

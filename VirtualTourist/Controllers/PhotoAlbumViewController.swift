@@ -73,7 +73,10 @@ class PhotoAlbumViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        try? self.dataController.backgroundContext.save()
+        let backgroundContext: NSManagedObjectContext = dataController.backgroundContext
+        backgroundContext.perform {
+            try? backgroundContext.save()
+        }
     }
     
     @IBAction func refetch(_ sender: Any) {
@@ -106,11 +109,12 @@ class PhotoAlbumViewController: UIViewController {
     
     private func setupFetchedResultsController() {
         let fetchRequest: NSFetchRequest<Image> = Image.fetchRequest()
-        let sortDescriptor = NSSortDescriptor(key: "data", ascending: true)
+        let sortDescriptor = NSSortDescriptor(key: "position", ascending: true)
         let predicate = NSPredicate(format: "pin == %@", pin)
         fetchRequest.sortDescriptors = [sortDescriptor]
         fetchRequest.predicate = predicate
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.backgroundContext, sectionNameKeyPath: nil, cacheName: "photos")
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.backgroundContext, sectionNameKeyPath: nil, cacheName: "images")
+        fetchedResultsController.delegate = self
         do {
             try fetchedResultsController.performFetch()
         } catch {
@@ -118,12 +122,13 @@ class PhotoAlbumViewController: UIViewController {
         }
     }
     
-    private func persistImage(data: Data, id: String) {
+    private func persistImage(data: Data, id: String, position: Int) {
         if !photoIds.contains(id) {
             let image = Image(context: self.dataController.backgroundContext)
             dataController.backgroundContext.insert(image)
             image.data = data
             image.pin = self.pin
+            image.position = Int64(position)
             photoIds.append(id)
         }
     }
@@ -146,8 +151,7 @@ class PhotoAlbumViewController: UIViewController {
             
                 cell.imageView.image = UIImage(data: data)
                 cell.setNeedsLayout()
-                
-                self.persistImage(data: data, id: photo.id)
+                self.persistImage(data: data, id: photo.id, position: indexPath.row)
             }
         }
     }
@@ -177,14 +181,23 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let flowayout = collectionViewLayout as? UICollectionViewFlowLayout
-        let space: CGFloat = (flowayout?.minimumInteritemSpacing ?? 0.0)
+        let space: CGFloat = flowLayout?.minimumInteritemSpacing ?? 0.0
         let size: CGFloat = (collectionView.frame.size.width - 4 * space) / 3.0
             return CGSize(width: size, height: size)
         }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        photos.remove(at: indexPath.row)
-        collectionView.deleteItems(at: [indexPath])
+        let imageToDelete = fetchedResultsController.object(at: indexPath)
+        dataController.backgroundContext.delete(imageToDelete)
+        try? dataController.backgroundContext.save()
+    }
+}
+
+extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
+    
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        if case .delete = type {
+            collectionView.deleteItems(at: [indexPath!])
+        }
     }
 }
