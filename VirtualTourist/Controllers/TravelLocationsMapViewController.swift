@@ -27,6 +27,10 @@ class TravelLocationsMapViewController: UIViewController {
         !userDefaults.bool(forKey: Constants.isFirstTimeOpenApp)
     }
     
+    deinit {
+        fetchedResultsController = nil
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         let longPressRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(longPressed(_:)))
@@ -41,12 +45,6 @@ class TravelLocationsMapViewController: UIViewController {
         super.viewWillAppear(animated)
         navigationController?.setNavigationBarHidden(true, animated: false)
         deselectAnnotations()
-        setupFetchedResultsController()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        fetchedResultsController = nil
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

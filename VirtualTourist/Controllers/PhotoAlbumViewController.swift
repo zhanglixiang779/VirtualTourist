@@ -23,6 +23,7 @@ class PhotoAlbumViewController: UIViewController {
     
     @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     
+    var isReload = false
     var photos: [Photo] = []
     var photoIds: [String] = []
     var client = NetworkClient()
@@ -38,8 +39,12 @@ class PhotoAlbumViewController: UIViewController {
         return fetchedObjects?.count ?? 0 > 0
     }
     
+    var shouldFetchLocally: Bool {
+        isImagesPersisted && !isReload
+    }
+    
     var count: Int {
-        if isImagesPersisted {
+        if shouldFetchLocally {
             return fetchedObjects!.count
         } else {
             return photos.count
@@ -80,17 +85,21 @@ class PhotoAlbumViewController: UIViewController {
     }
     
     @IBAction func refetch(_ sender: Any) {
-        fetchPhotos()
+        isReload = true
+        let ramdomInt = Int.random(in: 1..<100)
+        fetchPhotos(page: ramdomInt)
     }
+    
+    // MARK: private functions
     
     private func getUrlString(serverId: String, photoId: String, secret: String) -> String {
         return "https://live.staticflickr.com/\(serverId)/\(photoId)_\(secret)_q.jpg"
     }
     
-    private func fetchPhotos() {
+    private func fetchPhotos(page: Int = 1) {
         indicator.startAnimating()
         newCollectionButton.isEnabled = false
-        client.getPhotos(latitude: pin.latitude, longitude: pin.longitude) { (response, error) in
+        client.getPhotos(latitude: pin.latitude, longitude: pin.longitude, page: page) { (response, error) in
             guard let response = response else {
                 self.indicator.stopAnimating()
                 return
@@ -158,6 +167,8 @@ class PhotoAlbumViewController: UIViewController {
 
 }
 
+// MARK: CollectionViewDataSource and CollectionViewDelegateFlowLayout
+
 extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -171,7 +182,7 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.collectionViewCellId, for: indexPath) as! PhotoCell
         
-        if isImagesPersisted {
+        if shouldFetchLocally {
             updateCellFromLocal(indexPath: indexPath, cell: cell)
         } else {
             updateCellFromRemote(indexPath: indexPath, cell: cell)
@@ -192,6 +203,8 @@ extension PhotoAlbumViewController: UICollectionViewDataSource, UICollectionView
         try? dataController.backgroundContext.save()
     }
 }
+
+// MARK: FetchedResultsControllerDelegate
 
 extension PhotoAlbumViewController: NSFetchedResultsControllerDelegate {
     
